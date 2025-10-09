@@ -65,11 +65,16 @@ def get_following(user: str) -> Optional[List[FollowerData]]:
 
 				for follower_json in data['data']['user']['follows']['edges']:
 					cursor = follower_json['cursor']
-					name = follower_json['node']['login']
-					followed_at = datetime.fromisoformat(follower_json['followedAt'])
-					created_at = datetime.fromisoformat(follower_json['node']['createdAt'])
-					follower = FollowerData(name=name, created_at=created_at, followed_at=followed_at)
-					result.append(follower)
+
+					if follower_json['node'] is None:
+						# Deleted account
+						continue
+					else:
+						name = follower_json['node']['login']
+						followed_at = datetime.fromisoformat(follower_json['followedAt'])
+						created_at = datetime.fromisoformat(follower_json['node']['createdAt'])
+						follower = FollowerData(name=name, created_at=created_at, followed_at=followed_at)
+						result.append(follower)
 
 				if not data['data']['user']['follows']['pageInfo']['hasNextPage']:
 					break
