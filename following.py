@@ -9,10 +9,10 @@ from data import FollowerData
 
 API_URL = "https://gql.twitch.tv/gql"
 API_CLIENT_ID = "kd1unb4b3q4t58fwlpcbzcbnm76a8fp"
-FOLLOWERS_REQUEST_BODY = """
+FOLLOWING_REQUEST_BODY = """
 query fetchUser($id: ID, $login: String, $first: Int = 100, $after: Cursor) {
   user(id: $id, login: $login, lookupType: ALL) {
-    followers(first: $first, after: $after) {
+    follows(first: $first, after: $after) {
       totalCount
       pageInfo {
         hasNextPage
@@ -31,7 +31,7 @@ query fetchUser($id: ID, $login: String, $first: Int = 100, $after: Cursor) {
 """
 
 
-def get_followers(streamer: str) -> Optional[List[FollowerData]]:
+def get_following(user: str) -> Optional[List[FollowerData]]:
 	session = requests.Session()
 	cursor = None
 	result = []
@@ -39,14 +39,14 @@ def get_followers(streamer: str) -> Optional[List[FollowerData]]:
 
 	while True:
 		pagenum += 1
-		print(f"[LOG] loading followers, page {pagenum}")
+		print(f"[LOG] loading following, page {pagenum}")
 		
 		response = session.post(
 			url=API_URL,
 			json={
-				'query': FOLLOWERS_REQUEST_BODY,
+				'query': FOLLOWING_REQUEST_BODY,
 				'variables': {
-					'login': streamer,
+					'login': user,
 					'after': cursor
 				}
 			},
@@ -63,7 +63,7 @@ def get_followers(streamer: str) -> Optional[List[FollowerData]]:
 			try:
 				data = json.loads(response.text)
 
-				for follower_json in data['data']['user']['followers']['edges']:
+				for follower_json in data['data']['user']['follows']['edges']:
 					cursor = follower_json['cursor']
 					name = follower_json['node']['login']
 					followed_at = datetime.fromisoformat(follower_json['followedAt'])
@@ -71,9 +71,9 @@ def get_followers(streamer: str) -> Optional[List[FollowerData]]:
 					follower = FollowerData(name=name, created_at=created_at, followed_at=followed_at)
 					result.append(follower)
 
-				if not data['data']['user']['followers']['pageInfo']['hasNextPage']:
+				if not data['data']['user']['follows']['pageInfo']['hasNextPage']:
 					break
-			except:
+			except Exception as e:
 				print("Failed: invalid response format")
 				print(response.text)
 
@@ -84,6 +84,6 @@ def get_followers(streamer: str) -> Optional[List[FollowerData]]:
 
 if __name__ == "__main__":
 	if len(sys.argv) == 2:
-		print(*get_followers(sys.argv[1]), sep="\n")
+		print(*get_following(sys.argv[1]), sep="\n")
 	else:
 		print("Ivalid run format")
