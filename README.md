@@ -2,7 +2,7 @@
 
 Useful scripts to use graphql
 
-![Русская документация](./RU_README.md)
+[Русская документация](./RU_README.md)
 
 ## Followers loader
 
@@ -22,4 +22,4 @@ python3 following.py <user>
 
 ## Followers analytics
 
-![followers_analytics.ipynb](./followers_analytics.ipynb) provides an example, how to draw streamer followers histogram.
+[followers_analytics.ipynb](./followers_analytics.ipynb) provides an example, how to draw streamer followers histogram.
